@@ -67,10 +67,19 @@ local function parse_template(str, version)
   return str
 end
 
+local supported_mise_backends = {
+  cargo = "cargo:",
+  gem = "gem:",
+  golang = "go:",
+  npm = "npm:",
+  pypi = "pipx:",
+}
+
 function M.install_tool(tool, version, install_path)
-  -- format: pkg:github/owner/repo@version
-  local owner, repo, supported_version = tool.source.id:match("^pkg:github/([^/]+)/([^@]+)@(.+)")
-  if owner and repo and supported_version then
+  local pkgtype, pkg, _ = tool.source.id:match("^pkg:([^/]+)/([^@]+)@(.+)")
+
+  -- GitHub
+  if pkgtype == "github" then
     local os, arch = get_os_arch()
     local asset
     if tool.source.asset and type(tool.source.asset) == "table" then
@@ -88,7 +97,7 @@ function M.install_tool(tool, version, install_path)
     local filename = parse_template(asset.file, version)
 
     local asset_url = "https://github.com/" ..
-        owner .. "/" .. repo ..
+        pkg ..
         "/releases/download/" .. version ..
         "/" .. filename
 
@@ -107,14 +116,23 @@ function M.install_tool(tool, version, install_path)
     end
 
     return {}
-  else
-    local npm_cmd = "npm install " .. tool.name .. "@" .. version .. " --no-package-lock --no-save --silent"
-    local result = cmd.exec(npm_cmd, { cwd = install_path })
-    if result.code ~= 0 then
-      error("npm install failed: " .. result.stderr)
+  end
+
+  -- Install with mise
+  local mise_prefix = supported_mise_backends[pkgtype]
+  if mise_prefix then
+    local mise_pkg = mise_prefix .. pkg
+    local command = "mise install " .. mise_pkg .. "@" .. version
+    local success, output = pcall(cmd.exec, command)
+    if not success then
+      error(mise_pkg .. " install failed: " .. output)
     end
     return {}
   end
+
+  -- TODO: support opam, openvsx, generic, nuget, luarocks, composer
+
+  error("unsupported type: " .. pkgtype)
 end
 
 return M
