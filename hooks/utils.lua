@@ -21,7 +21,7 @@ function M.download_registry()
       error("registry download failed: " .. err)
     end
 
-    local err = archiver.decompress(REGISTRY_ZIP_PATH, REGISTRY_CACHE_DIR)
+    err = archiver.decompress(REGISTRY_ZIP_PATH, REGISTRY_CACHE_DIR)
     if err ~= nil then
       error("extraction failed: " .. err)
     end
@@ -101,7 +101,7 @@ function M.install_tool(tool, version, install_path)
       error("registry download failed: " .. err)
     end
 
-    local err = archiver.decompress(asset_dest_path, install_path)
+    err = archiver.decompress(asset_dest_path, install_path)
     if err ~= nil then
       error("extraction failed: " .. err)
     end
