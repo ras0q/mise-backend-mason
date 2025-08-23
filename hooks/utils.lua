@@ -2,6 +2,7 @@ local archiver = require("archiver")
 local cmd = require("cmd")
 local json = require("json")
 local http = require("http")
+local strings = require("strings")
 
 local M = {}
 
@@ -52,9 +53,20 @@ function M.find_tool(registry, name)
   return nil, nil
 end
 
--- TODO: return correct os and arch
+local os_mapping = {
+  Linux = "linux",
+}
+local arch_mapping = {
+  x86_64 = "x86",
+}
+
 local function get_os_arch()
-  return "linux", "x64"
+  local os = strings.trim_space(cmd.exec("uname -s"))
+  os = os_mapping[os] or os:lower()
+  local arch = strings.trim_space(cmd.exec("uname -m"))
+  arch = arch_mapping[arch] or arch:lower()
+
+  return os, arch
 end
 
 -- replace {{ version }} into v1.2.3
