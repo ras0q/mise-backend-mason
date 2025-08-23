@@ -45,7 +45,7 @@ end
 
 function M.find_tool(registry, name)
   for _, tool in ipairs(registry) do
-    if tool.name == name then
+    if tool.bin and tool.bin[name] ~= nil then
       return tool, type(tool)
     end
   end
