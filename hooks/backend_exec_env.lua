@@ -1,5 +1,7 @@
-function PLUGIN:BackendExecEnv(_)
+function PLUGIN:BackendExecEnv(ctx)
   return {
-    env_vars = {},
+    env_vars = {
+      { key = "PATH", value = ctx.install_path .. "/bin" },
+    },
   }
 end

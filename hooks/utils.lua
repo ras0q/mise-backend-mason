@@ -134,7 +134,7 @@ function M.install_tool(tool, version, install_path)
   local mise_prefix = supported_mise_backends[pkgtype]
   if mise_prefix then
     local mise_pkg = mise_prefix .. pkg
-    local command = "mise install " .. mise_pkg .. "@" .. version
+    local command = "mise install-into " .. mise_pkg .. "@" .. version .. " " .. install_path
     local success, output = pcall(cmd.exec, command)
     if not success then
       error(mise_pkg .. " install failed: " .. output)
