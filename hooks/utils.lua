@@ -1,5 +1,6 @@
 local archiver = require("archiver")
 local cmd = require("cmd")
+local file = require("file")
 local json = require("json")
 local http = require("http")
 local strings = require("strings")
@@ -87,7 +88,7 @@ local supported_mise_backends = {
   pypi = "pipx:",
 }
 
-function M.install_tool(tool, version, install_path)
+function M.install_tool(tool, version, original_name, install_path)
   local pkgtype, pkg, _ = tool.source.id:match("^pkg:([^/]+)/([^@]+)@(.+)")
   pkg = pkg and pkg:gsub("%%40", "@")
 
@@ -135,11 +136,26 @@ function M.install_tool(tool, version, install_path)
   local mise_prefix = supported_mise_backends[pkgtype]
   if mise_prefix then
     local mise_pkg = mise_prefix .. pkg
-    local command = "mise install-into " .. mise_pkg .. "@" .. version .. " " .. install_path
+
+    local download_path = file.join_path(
+      os.getenv("MISE_DATA_DIR") or file.join_path(os.getenv("HOME") or "~", ".local", "share", "mise"),
+      "downloads",
+      "mason-" .. original_name
+    )
+
+    local command = "mise install-into " .. mise_pkg .. "@" .. version .. " " .. download_path
+    print("command", mise_pkg, command)
     local success, output = pcall(cmd.exec, command)
     if not success then
-      error(mise_pkg .. " install failed: " .. output)
+      error(mise_pkg .. " install failed: " .. tostring(output))
     end
+
+    -- TODO: Windows support
+    success, output = pcall(cmd.exec, "mv " .. download_path .. "/* " .. install_path)
+    if not success then
+      error(mise_pkg .. " install failed (mv): " .. tostring(output))
+    end
+
     return {}
   end
 

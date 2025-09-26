@@ -13,6 +13,6 @@ function PLUGIN:BackendInstall(ctx)
     error("Tool or tool.source.id not found")
   end
 
-  local install_resp = utils.install_tool(tool, version, install_path)
+  local install_resp = utils.install_tool(tool, version, ctx.tool, install_path)
   return install_resp
 end
