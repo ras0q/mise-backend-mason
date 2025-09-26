@@ -89,6 +89,7 @@ local supported_mise_backends = {
 
 function M.install_tool(tool, version, install_path)
   local pkgtype, pkg, _ = tool.source.id:match("^pkg:([^/]+)/([^@]+)@(.+)")
+  pkg = pkg and pkg:gsub("%%40", "@")
 
   -- GitHub
   if pkgtype == "github" then
